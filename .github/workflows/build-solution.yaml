@@ -2,7 +2,7 @@ name: Test Build User API (Releases)
 on:
   push:
     braches: 
-      - none
+      - none #
   # Allow run workflow manually from Action tab
   workflow_dispatch:
 
