@@ -1,0 +1,51 @@
+name: Build user-api image 
+on:
+  push:
+    brach:
+      - main
+  #  tags: 'v*.*.*'
+  # Allow run workflow manually from Action tab
+  workflow_dispatch:
+env:
+  REGISTRY: docker.frappet.com
+  IMAGE_NAME: demo/user-api
+  IMAGE_TAG: 1.0.5
+  IMAGE_PATH: ${{env.REGISTRY}}/${{env.IMAGE_NAME}}
+
+jobs:
+  # act --workflows .github/workflows/build-user-api-image.yaml --job remote-image -s DOCKER_USER -s DOCKER_PASS
+  # act -W .github/workflows/build-user-api-image.yaml -j remote-image -s DOCKER_USER -s DOCKER_PASS
+  remote-image:  
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out code"
+        uses: actions/checkout@v3
+      # skip Set up QEMU because it fail on act and container
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2        
+      - name: Login in to registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{env.REGISTRY}}
+          username: ${{secrets.DOCKER_USER}}
+          password: ${{secrets.DOCKER_PASS}}
+
+      - name: Build and push docker image
+        uses: docker/build-push-action@v3
+        with: 
+          context: user
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{env.IMAGE_PATH}}:${{env.IMAGE_TAG}},${{env.IMAGE_PATH}}:latest
+
+  local-image:  
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out code"
+        uses: actions/checkout@v3
+      - name: Build and push docker image
+        uses: docker/build-push-action@v3
+        with: 
+          context: user
+          load: true
+          tags: ${{env.IMAGE_PATH}}:${{env.IMAGE_TAG}}

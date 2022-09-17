@@ -9,6 +9,18 @@
 
     # ค้นหา github action marketplace
 
+# Act
+    # https://juliusgamanyi.com/2022/04/27/run-github-actions-workflows-locally-using-act/#Download_and_configure_act
+    
+    # ติดตั้ง nektos/actact https://github.com/nektos/act/releases
+    # เลือกรันคำสั่งล่างนี้ Medium มันจะสร้าง ~/.actrc ให้
+    act --dryrun 
+    act --dryrun --workflows .github/workflows/build-image.yaml --verbose --list
+    # รันตาม job
+    act --workflows .github/workflows/build-image.yaml --verbose --job build 
+    # รันตาม event
+    act --workflows .github/workflows/build-image.yaml push
+
 # Docker
     # dev build and test
     docker build -t user-api .

@@ -1,9 +1,8 @@
-name: CI/CD 
-
+name: Test Build User API (Releases)
 on:
   push:
     brach:
-      - main
+      - dev
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,3 +18,8 @@ jobs:
         run: dotnet restore
       - name: Buid User API
         run: dotnet build -c Release --no-restore
+
+
+
+
+
