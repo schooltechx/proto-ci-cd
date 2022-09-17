@@ -1,0 +1,239 @@
+
+<!--
+  ~ Copyright 2016 Red Hat, Inc. and/or its affiliates
+  ~ and other contributors as indicated by the @author tags.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+  <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Microservice</title>
+        <script src="https://keycloak.frappet.synology.me/auth/js/keycloak.js"></script>
+    </head>
+    <body>
+    
+    <div>
+        <button onclick="keycloak.login()">Login</button>
+        <button onclick="keycloak.login({ action: 'UPDATE_PASSWORD' })">Update Password</button>
+        <button onclick="keycloak.logout()">Logout</button>
+        <button onclick="keycloak.register()">Register</button>
+        <button onclick="keycloak.accountManagement()">Account</button>
+        <button onclick="refreshToken(9999)">Refresh Token</button>
+        <button onclick="refreshToken(30)">Refresh Token (if <30s validity)</button>
+        <button onclick="loadProfile()">Get Profile</button>
+        <button onclick="updateProfile()">Update profile</button>
+        <button onclick="loadUserInfo()">Get User Info</button>
+        <button onclick="output(keycloak.tokenParsed)">Show Token</button>
+        <button onclick="output(keycloak.refreshTokenParsed)">Show Refresh Token</button>
+        <button onclick="output(keycloak.idTokenParsed)">Show ID Token</button>
+        <button onclick="showExpires()">Show Expires</button>
+        <button onclick="output(keycloak)">Show Details</button>
+        <button onclick="output(keycloak.createLoginUrl())">Show Login URL</button>
+        <button onclick="output(keycloak.createLogoutUrl())">Show Logout URL</button>
+        <button onclick="output(keycloak.createRegisterUrl())">Show Register URL</button>
+        <button onclick="output(keycloak.createAccountUrl())">Show Account URL</button>
+    
+    </div>
+    
+    <h2>Result</h2>
+    <pre style="background-color: #ddd; border: 1px solid #ccc; padding: 10px; word-wrap: break-word; white-space: pre-wrap;" id="output"></pre>
+    
+    <h2>Events</h2>
+    <pre style="background-color: #ddd; border: 1px solid #ccc; padding: 10px; word-wrap: break-word; white-space: pre-wrap;" id="events"></pre>
+    
+    
+    <script>
+        function loadProfile() {
+            keycloak.loadUserProfile().success(function(profile) {
+                output(profile);
+            }).error(function() {
+                output('Failed to load profile');
+            });
+        }
+    
+        function updateProfile() {
+            var url = keycloak.createAccountUrl().split('?')[0];
+            var req = new XMLHttpRequest();
+            req.open('POST', url, true);
+            req.setRequestHeader('Accept', 'application/json');
+            req.setRequestHeader('Content-Type', 'application/json');
+            req.setRequestHeader('Authorization', 'bearer ' + keycloak.token);
+    
+            req.onreadystatechange = function () {
+                if (req.readyState == 4) {
+                    if (req.status == 200) {
+                        output('Success');
+                    } else {
+                        output('Failed');
+                    }
+                }
+            }
+    
+            req.send('{"email":"myemail@foo.bar","firstName":"test","lastName":"bar"}');
+        }
+    
+        function loadUserInfo() {
+            keycloak.loadUserInfo().success(function(userInfo) {
+                output(userInfo);
+            }).error(function() {
+                output('Failed to load user info');
+            });
+        }
+    
+        function refreshToken(minValidity) {
+            keycloak.updateToken(minValidity).then(function(refreshed) {
+                if (refreshed) {
+                    output(keycloak.tokenParsed);
+                } else {
+                    output('Token not refreshed, valid for ' + Math.round(keycloak.tokenParsed.exp + keycloak.timeSkew - new Date().getTime() / 1000) + ' seconds');
+                }
+            }).catch(function() {
+                output('Failed to refresh token');
+            });
+        }
+    
+        function showExpires() {
+            if (!keycloak.tokenParsed) {
+                output("Not authenticated");
+                return;
+            }
+    
+            var o = 'Token Expires:\t\t' + new Date((keycloak.tokenParsed.exp + keycloak.timeSkew) * 1000).toLocaleString() + '\n';
+            o += 'Token Expires in:\t' + Math.round(keycloak.tokenParsed.exp + keycloak.timeSkew - new Date().getTime() / 1000) + ' seconds\n';
+    
+            if (keycloak.refreshTokenParsed) {
+                o += 'Refresh Token Expires:\t' + new Date((keycloak.refreshTokenParsed.exp + keycloak.timeSkew) * 1000).toLocaleString() + '\n';
+                o += 'Refresh Expires in:\t' + Math.round(keycloak.refreshTokenParsed.exp + keycloak.timeSkew - new Date().getTime() / 1000) + ' seconds';
+            }
+    
+            output(o);
+        }
+    
+        function output(data) {
+            if (typeof data === 'object') {
+                data = JSON.stringify(data, null, '  ');
+            }
+            document.getElementById('output').innerHTML = data;
+        }
+    
+        function event(event) {
+            var e = document.getElementById('events').innerHTML;
+            document.getElementById('events').innerHTML = new Date().toLocaleString() + "\t" + event + "\n" + e;
+        }
+    
+        var keycloak = Keycloak();
+    
+        keycloak.onAuthSuccess = function () {
+            event('Auth Success');
+        };
+    
+        keycloak.onAuthError = function (errorData) {
+            event("Auth Error: " + JSON.stringify(errorData) );
+        };
+    
+        keycloak.onAuthRefreshSuccess = function () {
+            event('Auth Refresh Success');
+        };
+    
+        keycloak.onAuthRefreshError = function () {
+            event('Auth Refresh Error');
+        };
+    
+        keycloak.onAuthLogout = function () {
+            event('Auth Logout');
+        };
+    
+        keycloak.onTokenExpired = function () {
+            event('Access token expired.');
+        };
+    
+        keycloak.onActionUpdate = function (status) {
+            switch (status) {
+                case 'success':
+                    event('Action completed successfully'); break;
+                case 'cancelled':
+                    event('Action cancelled by user'); break;
+                case 'error':
+                    event('Action failed'); break;
+            }
+        };
+    
+        // Flow can be changed to 'implicit' or 'hybrid', but then client must enable implicit flow in admin console too 
+        var initOptions = {
+            responseMode: 'fragment',
+            flow: 'standard'
+        };
+    
+        keycloak.init(initOptions).then(function(authenticated) {
+            output('Init Success (' + (authenticated ? 'Authenticated' : 'Not Authenticated') + ')');
+        }).catch(function() {
+            output('Init Error');
+        });
+    
+    </script>
+    <h1>ต้นแบบระบบ</h1>
+    <p>    ตัวอย่างการคอนฟิก Microservice เพื่อเป็นต้นแบบในการพัฒนา จะเพิ่มฟีเจอร์เรื่อยๆ
+        ใช้ Traefik เป็น API Gateway และ Load balance อย่างง่ายได้ 
+        รวมพอร์ตและ path จากหลายเซิร์ฟเวอร์ให้เป็น pathใน domain เดียว User จะไม่รู้เลยว่า ในโดเมนเดียวกัน
+        มีหลายเซิร์ฟเวอร์ให้บริการเบื้องหลังหลายตัว(Container) จะมีการเพิ่ม CI/CD 
+        และบริการอื่นเข้าไปในภายหลัง
+    </p>
+    <p>
+        ถ้านักพัฒนาเข้าใจการทำงานจะสามารถ
+        จำลองสภาพแวดล้อมเครื่องตัวเองได้โครงสร้างคล้ายกับ Production สามารถเลือก Route บริการต่าง 
+        ไปที่เครื่องของ Dev Test Product เพื่อทดสอบแบบต่างๆได้โดย แก้ปัญหา CORS ด้วย 
+        ให้เข้าเครื่อง <a href="https://proxmox-lab.frappet.synology.me/">Proxmox Lab</a>  
+        เพื่อดูรายละเอียดคอนฟิกต่างๆ ทุกเซิร์ฟเวอร์เป็น Docker Container 
+        สำหรับ .NET ให้อ่านวิธีการ build docker image ใน Readme.md Dockerfile docker-compose.yml
+    </p>
+    <p>
+        ในคอนฟิกของ docker มีการเปิดพอร์ตบนเครื่อง host แต่ไม่ได้ใช้งาน จะใช้การอ้างชื่อ service 
+        ที่ประกาศใน docker-compose.yml แทน ip:port การทำงานทำภายในเน็ตเวิร์ก proxy มี entry 
+        ที่พอร์ต 80. นักพัฒนาสามารถติดต่อตรงไปที่ ip:port ที่เปิดไว้ได้ถ้าไม่ได้ใช้ก็ปิดได้
+    </p>
+
+    <h3><a href="https://proto-traefik.frappet.synology.me" target=>Traefik Dashboard</a></h3>
+    <p>เอาไว้ดูว่าการ Route ในแต่ละ service เป็นยังไง</p>
+    <h3>Frontend</h3>
+    <p>คอนฟิก Route ใน  dynamic.yml เป็น root ของเวปสามารถเข้า sub folder ได้เลย</p>
+    <ul>
+        <li><a href="https://proto.frappet.synology.me">Root: /</a></li>
+        <li><a href="https://proto.frappet.synology.me/path1/">Fontend:/path1</a></li>
+    </ul>
+    <h3>Whoami</h3>
+    <p>คอนฟิก Route จาก Label ใน docker-compose.yml</p>
+    <ul>
+        <li><a href="https://proto.frappet.synology.me/whoami">Whoami:/whoami</a></li>
+    </ul>
+
+    <h3>API</h3>
+    <p>คอนฟิก Route ใน dynamic.yml /api/auth/* ต้องใช้ Regex 
+        เพื่อให้ใช้ Sub Folder ได้ swagger ไม่มี sub folder เลยไม่ต้องใช้</p>
+    <ul>
+        <li><a href="https://proto.frappet.synology.me/swagger">Swagger</a></li>
+    </ul>
+
+    <img src="network.png" alt="" width="80%">
+    <p>
+        จะมีระบบเพิ่มเติมที่อาจจะมารวมในแผนภาพนี้ พร้อมตัวอย่าง web app เช่น minio , frappet-meet, harbor, 
+        mysql, mongodb, keycloak, ELK, Grafana ฯลฯ
+    </p>
+
+
+    </body>
+    </html>
+    

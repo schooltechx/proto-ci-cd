@@ -1,0 +1,7 @@
+{
+    "realm" : "frappet",
+    "auth-server-url" : "https://keycloak.frappet.synology.me/auth",
+    "ssl-required" : "external",
+    "resource" : "proto",
+    "public-client" : true
+  }
