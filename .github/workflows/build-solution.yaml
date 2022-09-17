@@ -1,8 +1,9 @@
 name: Test Build User API (Releases)
-# on:
-#   push:
-#     braches: 
-#       - main 
+on:
+  push:
+    branches:
+      - 'main'
+      
   # Allow run workflow manually from Action tab
   workflow_dispatch:
 

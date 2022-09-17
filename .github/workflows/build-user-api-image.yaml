@@ -1,14 +1,15 @@
 name: Build user-api image 
 on:
   push:
-    braches: 
-      - main # none,main 
+    tags:
+      - v1.**
+
   # Allow run workflow manually from Action tab
   workflow_dispatch:
 env:
   REGISTRY: docker.frappet.com
   IMAGE_NAME: demo/user-api
-  IMAGE_TAG: 1.0.5
+  IMAGE_TAG: 1.0.6
   IMAGE_PATH: docker.frappet.com/demo/user-api
 
 jobs:
