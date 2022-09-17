@@ -1,7 +1,8 @@
 name: Build user-api image 
 on:
   push:
-    brach: none # none,main 
+    braches: 
+      - none # none,main 
   # Allow run workflow manually from Action tab
   workflow_dispatch:
 env:
