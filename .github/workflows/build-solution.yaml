@@ -3,6 +3,9 @@ on:
   push:
     brach:
       - dev
+  # Allow run workflow manually from Action tab
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
