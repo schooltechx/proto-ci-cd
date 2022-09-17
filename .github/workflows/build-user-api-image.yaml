@@ -10,7 +10,7 @@ env:
   REGISTRY: docker.frappet.com
   IMAGE_NAME: demo/user-api
   IMAGE_TAG: 1.0.5
-  IMAGE_PATH: ${{env.REGISTRY}}/${{env.IMAGE_NAME}}
+  IMAGE_PATH: docker.frappet.com/demo/user-api
 
 jobs:
   # act --workflows .github/workflows/build-user-api-image.yaml --job remote-image -s DOCKER_USER -s DOCKER_PASS
