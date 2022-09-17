@@ -2,7 +2,7 @@ name: Test Build User API (Releases)
 on:
   push:
     branches:
-      - 'main'
+      - 'dev'
   # Allow run workflow manually from Action tab
   workflow_dispatch:
 # act --workflows .github/workflows/build-solution.yaml --job build 

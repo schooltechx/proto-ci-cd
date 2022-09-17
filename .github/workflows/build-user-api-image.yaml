@@ -1,16 +1,16 @@
 name: Build user-api image 
 on:
   push:
-    tags:
-      - v1.**
-    # branches:
-    #   - 'main'
+    # tags:
+    #   - v1.**
+    branches:
+      - 'main'
   # Allow run workflow manually from Action tab
   workflow_dispatch:
 env:
   REGISTRY: docker.frappet.com
   IMAGE_NAME: demo/user-api
-  IMAGE_TAG: 1.0.6
+  IMAGE_TAG: 1.0.7
   IMAGE_PATH: docker.frappet.com/demo/user-api
 jobs:
   # act --workflows .github/workflows/build-user-api-image.yaml --job remote-image -s DOCKER_USER -s DOCKER_PASS
@@ -48,4 +48,4 @@ jobs:
         with: 
           context: user
           load: true
-          tags: ${{env.IMAGE_PATH}}:${{env.IMAGE_TAG}}
+          tags: ${{env.IMAGE_PATH}}:${{env.IMAGE_TAG}},${{env.IMAGE_PATH}}:latest
