@@ -9,7 +9,7 @@ RUN dotnet restore
 # Copy everything else and build
 # COPY ../engine/examples ./
 RUN dotnet publish -c Release -o out
-#COPY ./Hero.db ./out
+#COPY ./User.db ./out
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:6.0

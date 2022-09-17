@@ -1,5 +1,14 @@
 # proto-ci-cd
 
+
+# Git 
+    git config --global user.name "oom"
+    git config --global user.email "schooltechx@gmail.com"
+    git config --list
+    # สร้าง .github/workflows
+
+    # ค้นหา github action marketplace
+
 # Docker
     # dev build and test
     docker build -t user-api .
